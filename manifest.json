@@ -1,0 +1,44 @@
+{
+    "name": "Edit Button",
+    "description": "Show a button if the page you are viewing is editable.",
+    "version": "1.0.0",
+    "manifest_version": 3,
+    "page_action": {
+        "default_icon": "pen.svg",
+        "default_title": "Edit this page"
+    },
+    "permissions": ["tabs", "activeTab", "scripting", "storage"],
+    "background": {
+        "service_worker": "background.js",
+        "scripts": ["background.js"],
+        "type": "module"
+    },
+    "host_permissions": ["<all_urls>"],
+    "options_page": "options.html",
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["polyfill.js"],
+        "run_at": "document_start"
+      },
+      {
+        "matches": ["<all_urls>"],
+        "js": ["app.js"]
+      }
+    ],
+    "browser_specific_settings": {
+      "gecko": {
+        "id": "edit-button@edit-button"
+      }
+    },
+    "commands": {
+        "open-edit-link": {
+            "suggested_key": {
+                "default": "Ctrl+E",
+                "mac": "Command+Shift+E"
+            },
+            "description": "Open edit link"
+        }
+    }
+  }
+  
