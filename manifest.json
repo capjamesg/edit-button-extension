@@ -3,6 +3,10 @@
     "description": "Show a button if the page you are viewing is editable.",
     "version": "1.0.0",
     "manifest_version": 3,
+    "action": {
+        "default_icon": "pen.png",
+        "default_title": "Edit this page"
+    },
     "page_action": {
         "default_icon": "pen.svg",
         "default_title": "Edit this page"
