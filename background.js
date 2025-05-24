@@ -97,3 +97,13 @@ chrome.commands.onCommand.addListener((command) => {
         });
     }
 });
+
+// if you go to a new page, reset the edit link
+browser.webNavigation.onBeforeNavigate.addListener((details) => {
+    if (details.frameId === 0) { // only for main frame
+        const tabId = details.tabId;
+        delete tabIdToEditLink[tabId];
+        delete tabIdToPageIsLikely404[tabId];
+        chrome.pageAction.hide(tabId);
+    }
+}, { url: [{ urlMatches: '.*' }] });
