@@ -15,6 +15,7 @@ function getEditLink(tabUrl, tabId) {
     return new Promise((resolve) => {
         chrome.storage.sync.get({ overrides: {} }).then((items) => {
             for (const [key, value] of Object.entries(items.overrides)) {
+                if (!key || !value) continue;
                 const keyURL = new URL(key);
                 const keyDomain = keyURL.hostname;
                 const keyPath = keyURL.pathname;
