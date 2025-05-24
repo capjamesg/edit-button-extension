@@ -3,8 +3,8 @@ import './polyfill.js';
 const tabIdToEditLink = {};
 const tabIdToPageIsLikely404 = {};
 
-function composeURLParams (tabId) {
-    return `?url=${encodeURIComponent(tabIdToEditLink[tabId])}${tabIdToPageIsLikely404[tabId] ? '&pageIsLikely404=true' : ''}`;
+function composeURLParams (tabId, tabUrl) {
+    return `?url=${encodeURIComponent(tabUrl)}${tabIdToPageIsLikely404[tabId] ? '&pageIsLikely404=true' : ''}`;
 }
 
 
@@ -25,14 +25,12 @@ function getEditLink(tabUrl, tabId) {
                 const match = pattern.exec(tabUrl);
 
                 if (match) {
-                    console.log(`Matched override for ${tabUrl} with pattern ${key}, tab ID: ${tabId}`);
-                    console.log(tabIdToEditLink)
-                    return resolve(`${value}` + composeURLParams(tabId));
+                    return resolve(`${value}` + composeURLParams(tabId, tabUrl));
                 }
             }
 
             if (items.overrides[tabUrl]) {
-                resolve(`${items.overrides[tabUrl]}` + composeURLParams(tabId));
+                resolve(`${items.overrides[tabUrl]}` + composeURLParams(tabId, tabUrl));
             } else if (tabIdToEditLink[tabId]) {
                 resolve(tabIdToEditLink[tabId]);
             } else {
@@ -41,12 +39,9 @@ function getEditLink(tabUrl, tabId) {
         });
     });
 }
-const action = chrome.pageAction || chrome.action;
 
 function openEditLink(tab) {
-    console.log(tab, tabIdToEditLink, tabIdToPageIsLikely404);
     getEditLink(tab.url, tab.id).then((editLink) => {
-        console.log(editLink);
         if (!editLink) { return };
         chrome.storage.sync.get({ openInNewTab: false }).then((items) => {
             if (items.openInNewTab) {
@@ -58,6 +53,8 @@ function openEditLink(tab) {
     });
 }
 
+const action = chrome.pageAction || chrome.action;
+
 if (action && action.onClicked) {
     action.onClicked.addListener((tab) => {
         openEditLink(tab);
@@ -66,16 +63,11 @@ if (action && action.onClicked) {
 
 chrome.runtime.onMessage.addListener((request, sender) => {
     const tabId = sender.tab.id;
-    console.log(request)
-
     if (request.editLink && sender.tab) {
-        console.log(`Received edit link for tab ${tabId}: ${request.editLink}`);
-
         tabIdToEditLink[tabId] = request.editLink;
 
         chrome.pageAction.show(tabId);
     } else if (request.metadata && sender.tab) {
-        console.log(`Received pageIsLikely404 for tab ${tabId}: ${request.pageIsLikely404}`);
         tabIdToPageIsLikely404[tabId] = request.pageIsLikely404;
     }
 });
