@@ -9,26 +9,106 @@
             line-height: 1.5;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
+        h1, h2, p, label, textarea, button, input {
+          color: #e6e6e6;
+        }
+        p, input, button, label {
+          font-size: 1.1rem;
+        }
+        body {
+          max-width: 40rem;
+          margin: 0 auto;
+        }
         label, textarea, button {
             display: block;
+        }
+        table {
+          width: 40rem;
+          border-collapse: collapse;
+          margin-bottom: 1rem;
+          max-width: 100%;
+        }
+        table td {
+          padding-right: 1rem;
+        }
+        table td {
+          padding-bottom: 0.5rem;
+        }
+        thead th {
+          text-align: left;
+        }
+        #add-row {
+          margin-top: 1rem;
+        }
+        h2 {
+          margin-bottom: 0;
+        }
+        h2 + p {
+          margin-top: 0.5rem;
+        }
+        .side-by-side {
+          display: flex;
+          gap: 1rem;
+          max-width: 20rem;
+        }
+        .side-by-side label {
+          width: 100%;
+        }
+        button {
+          margin-top: 1rem;
+          width: 15rem;
+        }
+        table button {
+          margin-top: 0;
+          width: 100%;
+        }
+        header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
         }
     </style>
   </head>
 
   <body>
-    <h1>Edit Button Options</h1>
+    <header>
+      <h1>Edit Button Options</h1>
+      <img src="./pen_white.svg" alt="Edit Button" />
+    </header>
     <form>
-        <label for="overrides">Overrides</label>
-        <textarea id="overrides" rows="10" cols="50">
-    https://jamesg.blog, https://jamesg.blog/edit
-        </textarea>
-        <p style="margin-top: 0;"><em>You can specify a URL ending in /* to say apply to all URLs.</em></p>
-        <label for="natural-language-heuristics">Use natural language heuristics?</label>
-        <input type="checkbox" id="natural-language-heuristics" />
-        <br><br>
-        <button type="submit" id="save">Save</button>
+        <h2>Override URLs</h2>
+        <p>You can manually set a URL that you can use to edit pages on a domain.</p>
+        <p>This is useful if you have edit pages on a domain that are only accessible to you.</p>
+        <h2>Overrides</h2>
+        <table id="overrides">
+          <thead>
+            <tr>
+              <th>URL</th>
+              <th>Editable Using URL</th>
+              <th>Settings</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+          </tbody>
+        </table>
+        <button type="button" id="add-row">Add Row</button>
+        <h2>Settings</h2>
+        <div class="side-by-side">
+          <label for="natural-language-heuristics">Use natural language heuristics?</label>
+          <input type="checkbox" id="natural-language-heuristics" />
+        </div>
+        <div class="side-by-side">
+          <label for="open-in-new-tab">Open edit links in a new tab?</label>
+          <input type="checkbox" id="open-in-new-tab" />
+        </div>
+        <p><a href="#" id="download">Download overrides as CSV</a></p>
+        <input type="file" id="import-file" accept=".csv" style="display: none;" />
+        <button type="button" id="import">Import CSV</button>
     </form>
     <p id="status"></p>
+    <footer>
+      <p>You can <a href="https://github.com/capjamesg/edit-button-extension">view the source code</a> on GitHub.</p>
+    </footer>
     <script src="options.js"></script>
   </body>
 </html>

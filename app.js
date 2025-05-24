@@ -1,17 +1,8 @@
-// get rel=edit then send message
-var editLink = null;
+var editLink =
+    document.querySelector('link[rel="edit"], a[rel="edit"]') ||
+    document.querySelector('link[type="application/x-wiki"]');
 
-var relEdit = document.querySelector('link[rel="edit"], a[rel="edit"]');
-
-if (relEdit) {
-    editLink = relEdit;
-}
-
-var wikiLink = document.querySelector('link[type="application/x-wiki"]');
-
-if (wikiLink && !editLink) {
-    editLink = wikiLink;
-}
+const pageIsLikely404 = document.title.includes('404') || document.title.toLowerCase().includes("not found") || (document.textContent && document.textContent.includes('Page Not Found')) || false;
 
 chrome.storage.sync.get(
     { naturalLanguageHeuristics: false },
@@ -19,16 +10,16 @@ chrome.storage.sync.get(
         if (!editLink && items.naturalLanguageHeuristics) {
             var KEYWORDS = ["edit this page", "make a contribution", "view this page", "edit file"];
             for (var i = 0; i < document.links.length; i++) {
-        if (!editLink && KEYWORDS.some(kw => document.links[i].textContent.toLowerCase().includes(kw) || document.links[i].title?.toLowerCase().includes(kw) || document.links[i].ariaLabel?.toLowerCase().includes(kw))) {
-            editLink = document.links[i];
-            break;
-        }
+                if (!editLink && KEYWORDS.some(kw => document.links[i].textContent.toLowerCase().includes(kw) || document.links[i].title?.toLowerCase().includes(kw) || document.links[i].ariaLabel?.toLowerCase().includes(kw))) {
+                    editLink = document.links[i];
+                    break;
+                }
             }
         }
 
         if (editLink) {
             chrome.runtime.sendMessage({ editLink: editLink.href });
         }
+        chrome.runtime.sendMessage({ metadata: true, pageIsLikely404: pageIsLikely404 });
     }
 );
-

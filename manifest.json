@@ -4,14 +4,18 @@
     "version": "1.0.0",
     "manifest_version": 3,
     "action": {
-        "default_icon": "pen.png",
+        "default_icon": "/assets/pen.png",
         "default_title": "Edit this page"
     },
     "page_action": {
-        "default_icon": "pen.svg",
+        "default_icon": "/assets/pen.svg",
         "default_title": "Edit this page"
     },
     "permissions": ["tabs", "activeTab", "scripting", "storage"],
+    "options_ui": {
+        "page": "options.html",
+        "open_in_tab": true
+    },
     "background": {
         "service_worker": "background.js",
         "scripts": ["background.js"],
