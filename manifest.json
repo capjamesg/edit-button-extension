@@ -1,7 +1,7 @@
 {
     "name": "Edit Button",
     "description": "Show a button if the page you are viewing is editable.",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "manifest_version": 3,
     "action": {
         "default_icon": "/assets/pen.png",
