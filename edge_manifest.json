@@ -8,10 +8,6 @@
         "default_popup": "cross_origin_dialog.html",
         "default_title": "Edit this page"
     },
-    "page_action": {
-        "default_icon": "/assets/pen.svg",
-        "default_title": "Edit this page"
-    },
     "permissions": ["tabs", "activeTab", "scripting", "storage", "webNavigation", "history"],
     "options_ui": {
         "page": "options.html",
@@ -19,7 +15,6 @@
     },
     "background": {
         "service_worker": "background.js",
-        "scripts": ["background.js"],
         "type": "module"
     },
     "host_permissions": ["<all_urls>"],

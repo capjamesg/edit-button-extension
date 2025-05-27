@@ -4,6 +4,7 @@
     <title>Edit Button Options</title>
     <meta charset="utf-8" />
     <meta name="color-scheme" content="dark light" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
         * {
             line-height: 1.5;
@@ -101,11 +102,20 @@
           <label for="open-in-new-tab">Open edit links in a new tab?</label>
           <input type="checkbox" id="open-in-new-tab" />
         </div>
+        <div class="side-by-side">
+          <label for="look-for-view-source">Look for "View Source" links?</label>
+          <input type="checkbox" id="look-for-view-source" />
+        </div>
         <p><a href="#" id="download">Download overrides as CSV</a></p>
         <input type="file" id="import-file" accept=".csv" style="display: none;" />
         <button type="button" id="import">Import CSV</button>
     </form>
-    <p id="status"></p>
+    <h2>Approved cross-origin edit links</h2>
+    <ul id="approved-cross-origin-links">
+    </ul>
+    <h2>Denied cross-origin edit links</h2>
+    <ul id="denied-cross-origin-links">
+    </ul>
     <footer>
       <p>You can <a href="https://github.com/capjamesg/edit-button-extension">view the source code</a> on GitHub.</p>
     </footer>

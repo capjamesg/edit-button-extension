@@ -2,15 +2,46 @@ import './polyfill.js';
 
 const tabIdToEditLink = {};
 const tabIdToPageIsLikely404 = {};
+const tabIdToSourceLink = {};
 
 function composeURLParams (tabId, tabUrl) {
     return `?url=${encodeURIComponent(tabUrl)}${tabIdToPageIsLikely404[tabId] ? '&pageIsLikely404=true' : ''}`;
 }
 
+function setCrossOriginState (tabDomain, linkType, originDomain = null, state = "approved") {
+    chrome.storage.sync.get({ crossOriginState: "{}" }, (items) => {
+        var decoded = JSON.parse(items.crossOriginState);
+        if (!decoded[tabDomain]) {
+            decoded[tabDomain] = {};
+        }
+        if (!originDomain) {
+            delete decoded[tabDomain][linkType];
+        } else {
+            decoded[tabDomain][linkType] = {
+                "url": originDomain,
+                "state": state
+            };
+        }
+        // decoded[tabDomain] = {
+        //     "source": {"url": null, "state": null},
+        //     "edit": {"url": tabDomain, "state": "denied"}
+        // }
+        chrome.storage.sync.set({ crossOriginState: JSON.stringify(decoded) }, () => {
+            console.log("state updated:", decoded);
+        });
+    });
+}
 
-function getEditLink(tabUrl, tabId) {
+
+function getLink(tabUrl, tabId, linkType = "edit") {
     tabUrl = tabUrl.replace(/\/$/, "");
     const tabDomain = new URL(tabUrl).hostname;
+
+    if (linkType === "edit") {
+        var map = tabIdToEditLink;
+    } else {
+        var map = tabIdToSourceLink;
+    }
 
     return new Promise((resolve) => {
         chrome.storage.sync.get({ overrides: {} }).then((items) => {
@@ -32,8 +63,8 @@ function getEditLink(tabUrl, tabId) {
 
             if (items.overrides[tabUrl]) {
                 resolve(`${items.overrides[tabUrl]}` + composeURLParams(tabId, tabUrl));
-            } else if (tabIdToEditLink[tabId]) {
-                resolve(tabIdToEditLink[tabId]);
+            } else if (map[tabId]) {
+                resolve(map[tabId]);
             } else {
                 resolve(null);
             }
@@ -41,16 +72,47 @@ function getEditLink(tabUrl, tabId) {
     });
 }
 
-function openEditLink(tab) {
-    getEditLink(tab.url, tab.id).then((editLink) => {
-        if (!editLink) { return };
-        chrome.storage.sync.get({ openInNewTab: false }).then((items) => {
-            if (items.openInNewTab) {
-                chrome.tabs.create({ url: editLink, active: true, index: tab.index + 1 });
-            } else {
-                chrome.tabs.update(tab.id, { url: editLink });
-            }
+function openLink(tab, linkType = "edit") {
+    return new Promise((resolve) => {
+        getLink(tab.url, tab.id, linkType).then((editLink) => {
+            if (!editLink) { return };
+            var editLinkDomain = new URL(editLink).hostname;
+            var tabDomain = new URL(tab.url).hostname;
+            // request cross origin
+            chrome.storage.sync.get({ crossOriginState: "{}" }, (items) => {
+                var decoded = JSON.parse(items.crossOriginState);
+                var crossOriginPermitted = decoded[tabDomain] && decoded[tabDomain][linkType] && decoded[tabDomain][linkType].state === "approved";
+                // if cross origin approved, the tab can be updated
+                // otherwise, the request is denied
+                // the cross origin pop up will handle the request
+                // the pop up will ask for user input depending on the cross origin state
+                // then the request can be re-initiated where crossOriginPermitted would evaluate
+                // to true or false depending on the user's input
+                // console.log("Cross-origin state for", tabDomain, ":", crossOriginPermitted);
+                if (editLinkDomain === tabDomain || crossOriginPermitted) {
+                    console.info("Edit request approved. Opening link:", editLink);
+                    chrome.storage.sync.get({ openInNewTab: false }).then((items) => {
+                        if (items.openInNewTab) {
+                            chrome.tabs.create({ url: editLink, active: true, index: tab.index + 1 });
+                        } else {
+                            if (linkType === "edit") {
+                                tabIdToEditLink[tab.id] = editLink;
+                            } else {
+                                tabIdToSourceLink[tab.id] = editLink;
+                            }
+                            // Update the current tab with the edit link, but keep history
+                            // so that the user can go back to the original page
+                            chrome.history.addUrl({ url: editLink });
+                            // Update the tab's URL to the edit link
+                            chrome.tabs.update(tab.id, { url: editLink });
+                        }
+                    });
+                } else {
+                    action.setPopup({popup: 'cross_origin_dialog.html', tabId: tab.id});
+                }
+            });
         });
+        resolve();
     });
 }
 
@@ -58,25 +120,89 @@ const action = chrome.pageAction || chrome.action;
 
 if (action && action.onClicked) {
     action.onClicked.addListener((tab) => {
-        openEditLink(tab);
+        openLink(tab, "edit").then(() => {
+            if (tabIdToSourceLink[tab.id] && !tabIdToEditLink[tab.id]) {
+                openLink(tab, "source");
+            }
+        });
     });
 }
 
-chrome.runtime.onMessage.addListener((request, sender) => {
-    const tabId = sender.tab.id;
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    var tabId = null;
+
+    if (sender && sender.tab) {
+        tabId = sender.tab.id;
+    } else {
+        tabId = request.tabId || null;
+    }
     if (request.editLink && sender.tab) {
         tabIdToEditLink[tabId] = request.editLink;
 
+        chrome.pageAction.setIcon({path: {16:"assets/pen.svg"}, tabId: tabId});
+        chrome.pageAction.show(tabId);
+    } else if (request.sourceLink && sender.tab) {
+        console.log("Source link found:", request.sourceLink);
+        tabIdToSourceLink[tabId] = request.sourceLink;
+        chrome.pageAction.setIcon({path: {16:"assets/source.svg"}, tabId: tabId});
         chrome.pageAction.show(tabId);
     } else if (request.metadata && sender.tab) {
         tabIdToPageIsLikely404[tabId] = request.pageIsLikely404;
+    } 
+
+    var requestType = tabIdToEditLink[tabId] ? "edit" : "source";
+    var linkToOpen = tabIdToEditLink[tabId] || tabIdToSourceLink[tabId];
+
+    // if using in any browser that isn't firefox
+    var isFirefox = typeof InstallTrigger !== 'undefined';
+
+    if (!linkToOpen && !isFirefox) {
+        chrome.pageAction.setIcon({path: {16:"assets/pen_with_strike_through.svg"}, tabId: tabId});
+        chrome.pageAction.show(tabId);
     }
+
+    chrome.tabs.get(tabId, (tab) => {
+        if (request.openEditLink) {
+            setCrossOriginState(new URL(tab.url).hostname, requestType, new URL(linkToOpen).hostname, "approved");
+            openLink(tab, requestType);
+        } else if (request.denyCrossOriginRequest) {
+            setCrossOriginState(new URL(tab.url).hostname, requestType, new URL(linkToOpen).hostname, "null");
+        } else if (request.revokeCrossOriginRequest) {
+            console.log("Revoke cross-origin request for domain:", request.domain);
+            setCrossOriginState(request.domain, requestType);
+        } else if (request.getCrossOriginState) {
+            chrome.storage.sync.get({ crossOriginState: "{}" }, (items) => {
+                var decoded = JSON.parse(items.crossOriginState);
+                var tabDomain = new URL(tab.url).hostname;
+                var state = decoded[tabDomain] && decoded[tabDomain].edit ? decoded[tabDomain].edit.state : "ask-for-permission";
+                // if current Edit link doesn't match current tab's domain, set state to "ask-for-permission"
+
+                // if the page the user has viewing has appointed a new origin for its edit link
+                // the user will be asked to re-approve
+                // this ensures that a user is never taken to an origin they have not explicitly approved
+                var linkUrl = decoded[tabDomain]?.edit?.url || null;
+                if (linkUrl && linkUrl !== new URL(linkToOpen).hostname) {
+                    state = "origin-changed";
+                }
+                var response = {
+                    state: state,
+                    editLink: tabIdToEditLink[tabId] || null,
+                    sourceLink: tabIdToSourceLink[tabId] || null,
+                    pageIsLikely404: tabIdToPageIsLikely404[tabId] || false,
+                };
+                sendResponse(response);
+            });
+        }
+    });
+
+    return true;
 });
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (changeInfo.status === 'complete') {
-        getEditLink(tab.url, tabId).then((editLink) => {
+        getLink(tab.url, tabId).then((editLink) => {
             if (editLink) {
+                chrome.pageAction.setIcon({path: {16:"assets/pen.svg"}, tabId: tabId});
                 chrome.pageAction.show(tabId);
             }
         });
@@ -86,24 +212,16 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 chrome.tabs.onRemoved.addListener((tabId) => {
     delete tabIdToEditLink[tabId];
     delete tabIdToPageIsLikely404[tabId];
+    delete tabIdToSourceLink[tabId];
 });
 
 chrome.commands.onCommand.addListener((command) => {
     if (command === 'open-edit-link') {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            var requestType = tabIdToEditLink[tabs[0].id] ? "edit" : "source";
             if (tabs.length > 0) {
-                openEditLink(tabs[0]);
+                openLink(tabs[0], requestType);
             }
         });
     }
 });
-
-// if you go to a new page, reset the edit link
-browser.webNavigation.onBeforeNavigate.addListener((details) => {
-    if (details.frameId === 0) { // only for main frame
-        const tabId = details.tabId;
-        delete tabIdToEditLink[tabId];
-        delete tabIdToPageIsLikely404[tabId];
-        chrome.pageAction.hide(tabId);
-    }
-}, { url: [{ urlMatches: '.*' }] });
