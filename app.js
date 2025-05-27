@@ -1,4 +1,5 @@
 function main () {
+    console.log("Content script loaded on", window.location.href);
     var editLink =
         document.querySelector('link[rel="edit"], a[rel="edit"]') ||
         document.querySelector('link[type="application/x-wiki"]');
@@ -21,7 +22,7 @@ function main () {
         { naturalLanguageHeuristics: false, lookForViewSource: false },
         (items) => {
             if (!editLink && items.naturalLanguageHeuristics) {
-                var KEYWORDS = ["edit this page", "make a contribution", "view this page", "edit file"];
+                var KEYWORDS = ["edit this page", "make a contribution", "view this page", "edit file", "edit this file"];
                 editLink = scanPageAnchorsForText(KEYWORDS);
             }
 
@@ -44,4 +45,3 @@ function main () {
 }
 
 main();
-document.addEventListener('pageshow', main);

@@ -4,6 +4,8 @@ const tabIdToEditLink = {};
 const tabIdToPageIsLikely404 = {};
 const tabIdToSourceLink = {};
 
+var crossOriginStateGlobal = {};
+
 function composeURLParams (tabId, tabUrl) {
     return `?url=${encodeURIComponent(tabUrl)}${tabIdToPageIsLikely404[tabId] ? '&pageIsLikely404=true' : ''}`;
 }
@@ -15,7 +17,8 @@ function setCrossOriginState (tabDomain, linkType, originDomain = null, state = 
             decoded[tabDomain] = {};
         }
         if (!originDomain) {
-            delete decoded[tabDomain][linkType];
+            console.log("Removing cross-origin state for", tabDomain, "and link type", linkType);
+            delete decoded[tabDomain];
         } else {
             decoded[tabDomain][linkType] = {
                 "url": originDomain,
@@ -100,31 +103,49 @@ function openLink(tab, linkType = "edit") {
                             } else {
                                 tabIdToSourceLink[tab.id] = editLink;
                             }
-                            // Update the current tab with the edit link, but keep history
-                            // so that the user can go back to the original page
-                            chrome.history.addUrl({ url: editLink });
-                            // Update the tab's URL to the edit link
-                            chrome.tabs.update(tab.id, { url: editLink });
+
+                            console.log("Opening link in current tab:", editLink);
+
+                            // write current tab link to the browser hisotyr for the tab
+                            browser.history.addUrl({ url: tab.url }).then(() => {
+                                console.log("Current tab URL added to history:", tab.url);
+                                chrome.tabs.update(tab.id, { url: editLink });
+                            });
+
+                            resolve({ message: "linkOpened", tabId: tab.id, linkType: linkType  });
+
+                            return true;
                         }
                     });
-                } else {
-                    action.setPopup({popup: 'cross_origin_dialog.html', tabId: tab.id});
                 }
             });
         });
-        resolve();
     });
 }
 
 const action = chrome.pageAction || chrome.action;
 
+// save global
+chrome.storage.sync.get({ crossOriginState: "{}" }, (items) => {
+    crossOriginStateGlobal = JSON.parse(items.crossOriginState);
+    console.log("Cross-origin state loaded:", crossOriginStateGlobal);
+});
+
 if (action && action.onClicked) {
     action.onClicked.addListener((tab) => {
-        openLink(tab, "edit").then(() => {
+        openLink(tab, "edit").then((result) => {
             if (tabIdToSourceLink[tab.id] && !tabIdToEditLink[tab.id]) {
                 openLink(tab, "source");
             }
         });
+        var tabDomain = new URL(tab.url).hostname;
+        var linkType = tabIdToEditLink[tab.id] ? "edit" : "source";
+        console.log("perms", crossOriginStateGlobal)
+        var crossOriginPermitted = crossOriginStateGlobal[tabDomain] && crossOriginStateGlobal[tabDomain][linkType] && crossOriginStateGlobal[tabDomain][linkType].state === "approved";
+        if (!crossOriginPermitted) {
+            action.setPopup({ popup: 'cross_origin_dialog.html', tabId: tab.id });
+            action.openPopup();
+        }
     });
 }
 
@@ -224,4 +245,13 @@ chrome.commands.onCommand.addListener((command) => {
             }
         });
     }
+});
+
+// if user navigates to new page, reset the edit link
+// onHistoryStateUpdated
+
+browser.storage.onChanged.addListener((changes, areaName) => {
+    console.log("Storage changes detected:", changes, areaName);
+  crossOriginStateGlobal = changes.crossOriginState ? JSON.parse(changes.crossOriginState.newValue) : {};
+  console.log("Cross-origin state updated:", crossOriginStateGlobal);
 });

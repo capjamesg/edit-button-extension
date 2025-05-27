@@ -24,6 +24,12 @@
     },
     "host_permissions": ["<all_urls>"],
     "options_page": "options.html",
+    "web_accessible_resources": [
+      {
+        "resources": ["cross_origin_dialog.html", "cross_origin_dialog.js"],
+        "matches": ["<all_urls>"]
+      }
+    ],
     "content_scripts": [
       {
         "matches": ["<all_urls>"],
