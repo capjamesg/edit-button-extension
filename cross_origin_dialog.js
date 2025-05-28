@@ -52,7 +52,6 @@ function main() {
                 chrome.runtime.sendMessage({ approveCrossOriginRequest: true, openEditLink: true, tabId: tabId });
             }
         });
-        window.close();
     });
 
     denyButton.addEventListener('click', () => {
@@ -60,7 +59,6 @@ function main() {
             if (tabs.length > 0) {
                 var tabId = tabs[0].id;
                 chrome.runtime.sendMessage({ denyCrossOriginRequest: true, tabId: tabId });
-                window.close();
             }
         });
     });

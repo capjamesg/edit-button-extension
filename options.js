@@ -164,6 +164,7 @@ const populateRows = () => {
             e.preventDefault();
             chrome.runtime.sendMessage({ revokeCrossOriginRequest: true, domain: domain });
             console.log(`Revoke request sent for ${domain}`);
+            li.remove();
           });
           li.appendChild(link);
           approvedLinks.appendChild(li);
@@ -178,6 +179,7 @@ const populateRows = () => {
             e.preventDefault();
             chrome.runtime.sendMessage({ revokeCrossOriginRequest: true, domain: domain });
             console.log(`Revoke request sent for ${domain}`);
+            li.remove();
           });
           li.appendChild(link);
           deniedLinks.appendChild(li);

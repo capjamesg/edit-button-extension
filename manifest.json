@@ -5,7 +5,6 @@
     "manifest_version": 3,
     "action": {
         "default_icon": "/assets/pen.png",
-        "default_popup": "cross_origin_dialog.html",
         "default_title": "Edit this page"
     },
     "page_action": {
