@@ -1,14 +1,13 @@
-// Saves options to chrome.storage
-
 const saveOptions = () => {
-console.log("autosaving")
   const overrides = document.getElementById('tbody').querySelectorAll('tr');
-  // make overrides from csv to json; map 0 to 1
+
   const overridesJson = {};
+  console.log("Saving overrides:", overrides);
   overrides.forEach(row => {
     const url = row.querySelectorAll('input[type="text"]')[0].value;
     const editable = row.querySelectorAll('input[type="text"]')[1].value;
     overridesJson[url] = editable;
+    console.log(`Saving override: ${url} -> ${editable}`);
   });
   const naturalLanguageHeuristics = document.getElementById('natural-language-heuristics').checked;
   const openInNewTab = document.getElementById('open-in-new-tab').checked;
@@ -19,8 +18,6 @@ console.log("autosaving")
   );
 };
 
-// Restores select box and checkbox state using the preferences
-// stored in chrome.storage.
 const restoreOptions = () => {
   chrome.storage.sync.get(
     { overrides: {}, naturalLanguageHeuristics: false, openInNewTab: false, lookForViewSource: false },
@@ -80,8 +77,9 @@ const addRow = () => {
   // Add autosave listeners to the new inputs
   addAutosaveListeners(urlInput);
   addAutosaveListeners(editableInput);
+  // Add the new row to the table
   
-  saveOptions(); // Save after adding a new row
+  saveOptions();
 };
 
 document.getElementById('add-row').addEventListener('click', addRow);
@@ -89,23 +87,18 @@ document.getElementById('add-row').addEventListener('click', addRow);
 const deleteRow = (row) => {
   const table = document.getElementById('tbody');
   if (table.rows.length > 1) {
-    table.deleteRow(row.rowIndex);
+    table.deleteRow(row.rowIndex - 1);
   } else {
-    // If it's the last row, clear inputs instead of deleting
     row.querySelectorAll('input[type="text"]').forEach(input => input.value = '');
   }
 };
-// Function to add autosave listeners to an input
 const addAutosaveListeners = (input) => {
-  // Remove any existing listeners to prevent duplicates
-  input.removeEventListener('input', saveOptions);
-  input.removeEventListener('change', saveOptions);
-  input.removeEventListener('blur', saveOptions);
-  
-  // Add new listeners
-  input.addEventListener('input', saveOptions);
-  input.addEventListener('change', saveOptions);
-  input.addEventListener('blur', saveOptions);
+  input.addEventListener('input', () => {
+    saveOptions();
+  });
+  input.addEventListener('change', () => {
+    saveOptions();
+  });
 };
 // populate rows from sync
 const populateRows = () => {
@@ -145,6 +138,9 @@ const populateRows = () => {
           saveOptions(); // Save after deleting a row
         });
         cell3.appendChild(deleteBtn);
+        // add listeners
+        addAutosaveListeners(urlInput);
+        addAutosaveListeners(editableInput);
       });
       var crossOriginState = JSON.parse(items.crossOriginState);
       // approved-cross-origin-links
