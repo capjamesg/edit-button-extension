@@ -50,16 +50,16 @@ Approved and denied origins can be viewed by the user from the extension prefere
 
 ## Release Checklist
 
-[ ] Test the extension on:
+- [ ] Test the extension on:
     - Firefox
     - Chrome
     - Safari (macOS)
     - Safari (iOS)
     - Edge
     - Firefox for Android
-[ ] The `manifest.json` and `edge_manifest.json` version numbers have been updated.
-[ ] Run `build.zip`.
-[ ] Release extension via each distribution channel.
+- [ ] The `manifest.json` and `edge_manifest.json` version numbers have been updated.
+- [ ] Run `build.zip`.
+- [ ] Release extension via each distribution channel.
 
 ## Contributing
 
