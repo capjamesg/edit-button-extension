@@ -23,7 +23,7 @@ Safari support is in development.
 
 ## Example
 
-![A screenshot showing an edit button in the URL bar of a page on the IndieWeb wiki](./screenshot.png)
+https://github.com/user-attachments/assets/8b21ece3-5925-4ef5-a49b-e4d419bdecb4
 
 ## Supported Sites
 
