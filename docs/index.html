@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Button</title>
+    <link rel="icon" href="assets/pen.svg" type="image/svg+xml">
+    <meta name="description" content="A browser extension that shows an edit icon when a page is editable.">
     <style>
         :root {
             --primary-color: royalblue;
@@ -13,15 +15,19 @@
             box-sizing: border-box;
             line-height: 1.5;
         }
+        p, h1, h2, h3 {
+            color: light-dark(black, #e6e6e6);
+        }
         html {
             max-width: 35rem;
             margin: auto;
             padding: 0 1rem;
+            /* color-scheme: light dark; */
         }
         nav {
             display: flex;
             justify-content: space-between;
-            border-bottom: 1px solid #ccc;
+            border-bottom: 1px solid light-dark(#ccc, #e6e6e6);
             margin-top: 0.25rem;
         }
         nav ul {
@@ -64,7 +70,7 @@
             margin-top: 3rem;
         }
         code {
-            background-color: #e2e2e2;
+            background-color: light-dark(#e2e2e2, #333);
             font-family: monospace;
         }
         main li {
@@ -79,10 +85,10 @@
         </ul>
         <ul>
             <li>Install on:</li>
-            <li><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Safari_2020_logo.svg/2048px-Safari_2020_logo.svg.png" /></li>
-            <li><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgzIrIdoS4HlZcOsWK_6I_kKWvHeBDiFNvNw&s" /></li>
-            <li><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Microsoft_Edge_logo_%282019%29.svg/768px-Microsoft_Edge_logo_%282019%29.svg.png" /></li>
-            <li><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Google_Chrome_icon_%28February_2022%29.svg/2048px-Google_Chrome_icon_%28February_2022%29.svg.png" /></li>
+            <!-- <li><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Safari_2020_logo.svg/2048px-Safari_2020_logo.svg.png" /></li> -->
+            <li><a href="https://addons.mozilla.org/en-US/firefox/addon/edit-button-rel/"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgzIrIdoS4HlZcOsWK_6I_kKWvHeBDiFNvNw&s"  alt="Firefox" /></a></li>
+            <!-- <li><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Microsoft_Edge_logo_%282019%29.svg/768px-Microsoft_Edge_logo_%282019%29.svg.png" /></li>
+            <li><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Google_Chrome_icon_%28February_2022%29.svg/2048px-Google_Chrome_icon_%28February_2022%29.svg.png" /></li> -->
         </ul>
     </nav>
     <main>
