@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Button</title>
+    <link rel="icon" href="assets/pen.svg" type="image/svg+xml">
+    <meta name="description" content="A browser extension that shows an edit icon when a page is editable.">
+    <style>
+        :root {
+            --primary-color: royalblue;
+        }
+        * {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            box-sizing: border-box;
+            line-height: 1.5;
+        }
+        p, h1, h2, h3 {
+            color: light-dark(black, #e6e6e6);
+        }
+        html {
+            max-width: 35rem;
+            margin: auto;
+            padding: 0 1rem;
+            /* color-scheme: light dark; */
+        }
+        nav {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid light-dark(#ccc, #e6e6e6);
+            margin-top: 0.25rem;
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 1rem;
+        }
+        nav img {
+            max-height: 2rem;
+        }
+        main img {
+            max-width: 100%;
+            border: 1px solid #ccc;
+        }
+        h1 {
+            margin-bottom: 0;
+        }
+        a {
+            color: var(--primary-color);
+        }
+        #icon-list {
+            list-style: none;
+            padding: 0;
+        }
+        #icon-list li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            gap: 1rem;
+        }
+        h2, h3 {
+            margin-top: 2rem;
+            margin-bottom: 0;
+        }
+        footer {
+            margin-top: 3rem;
+        }
+        code {
+            background-color: light-dark(#e2e2e2, #333);
+            font-family: monospace;
+        }
+        main li {
+            margin-bottom: 0.5rem;
+        }
+        video {
+            width: 100%;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="/" rel="home">Edit Button</a></li>
+        </ul>
+        <ul>
+            <li>Install on:</li>
+            <!-- <li><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Safari_2020_logo.svg/2048px-Safari_2020_logo.svg.png" /></li> -->
+            <li><a href="https://addons.mozilla.org/en-US/firefox/addon/edit-button-rel/"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgzIrIdoS4HlZcOsWK_6I_kKWvHeBDiFNvNw&s"  alt="Firefox" /></a></li>
+            <!-- <li><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Microsoft_Edge_logo_%282019%29.svg/768px-Microsoft_Edge_logo_%282019%29.svg.png" /></li>
+            <li><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Google_Chrome_icon_%28February_2022%29.svg/2048px-Google_Chrome_icon_%28February_2022%29.svg.png" /></li> -->
+        </ul>
+    </nav>
+    <main>
+        <h1>Edit Button Settings</h1>
+        <p>After you install the Edit Button extension, there are several configuration options available.</p>
+        <p>To configure the extension, go to your browser's extensions page, find the Edit Button extension, then click the button to manage extension preferences.</p>
+        <p>You will see several configuration options:</p>
+        <ul>
+            <li><b><a href="#overrides">Overrides</a></b>: Specify edit URLs for specific URLs, all URLs in a path, or a full domain.</li>
+            <li><b><a href="#settings">Settings</a></b>: Several options that control the functionality of the extension.</li>
+            <li><b><a href="#cross-origin">Approved and denied cross-origin edit links</a></b>: See a list of sites with cross-origin edit links that you have approved or denied.</li>
+        </ul>
+        <h3 id="overrides">Overrides</h3>
+        <p>Overrides let you specify a URL that you can use to edit a web page, pages in a path, or pages on a domain.</p>
+        <p>This feature is ideal if you want to use the Edit Button but a web page or site doesn't have an edit link.</p>
+        <p>Overrides will override any edit link on a page that matches an Override URL or URL pattern.</p>
+        <p>To set up an Override, you need to specify:</p>
+        <ol>
+            <li>A URL or URL pattern to match, and;</li>
+            <li>The URL that can be used to edit any URL with the given pattern.</li>
+        </ol>
+        <p>The URL pattern can be:</p>
+        <ul>
+            <li>A full URL, such as <code>https://example.com/page</code>.</li>
+            <li>A path on a domain, such as <code>https://example.com/page/*</code>, which matches any URL with that path.</li>
+            <li>A domain, such as <code>https://example.com/*</code>, which matches any URL on that domain.</li>
+        </ul>
+        <p>The <code>/*</code> is a wildcard that means any URL in the specified path will be routed to the specified edit URL.</p>
+        <p>Two parameters are passed to edit URLs when you click on the Edit Button on a page where your Override applies:</p>
+        <ul>
+            <li><code>url</code>: The URL of the page you clicked the Edit Button on.</li>
+            <li><code>pageIsLikely404</code>: The page has a title that indicates it may be a 404.</li>
+        </ul>
+        <p>The <code>pageIsLikely404</code> parameter is experimental.</p>
+        <h3 id="settings">Settings</h3>
+        <p>The following settings are available:</p>
+        <ul>
+            <li><b>Use natural language heuristics?</b>: When enabled, this URL will scan link anchors on a page to see if any contain words phrases like "Edit this page" that would indicate the page is editable. This feature is disabled by default because there may be false positives.</li>
+            <li><b>Open edit links in a new tab?</b>: By default, clicking the Edit Button will open the edit link in your current tab. You can open edit links in a new tab by enabling this setting.</li>
+            <li><b>Look for "View Source" links?</b>: When enabled, this feature will scan a page for "View Source" link anchors. If one is found and an edit link is not found, the Edit Button icon will update to a View Source icon. The anchor of the View Source link will be opened if you click the button.</li>
+        </ul>
+        <h3 id="cross-origin">Approved and denied cross-origin edit links</h3>
+        <p>Every time you click the Edit Button, the extension checks to see whether the domain of the page you clicked the button while viewing is the same as the edit link found on the page.</p>
+        <p>If the domain of the site you are viewing and the domain of the edit link are different, you will be asked to Approve or Deny use of the edit link domain for the website you are viewing.</p>
+        <p>For example, suppose you are viewing <code>example.com</code> and there is an edit link that points to <code>example.org</code>. You will be asked to approve <code>example.org</code> as an editing origin for <code>example.com</code>.</p>
+        <p>A list of all approved and denied cross-origin edit links will appear in your extension preferences.</p>
+        <p>You can remove a domain from your Approved or Denied lists at any time.</p>
+    </main>
+    <footer>
+        <p><a href="https://github.com/capjamesg/edit-button-extension" rel="repository">View source.</a></p>
+    </footer>
+</body>
+</html>
