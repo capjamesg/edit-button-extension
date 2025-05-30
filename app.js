@@ -30,9 +30,37 @@ function main () {
                 chrome.runtime.sendMessage({ editLink: editLink.href });
             }
 
+            // rel="code repository" to link to the code file for a page in a repository. Good: combine multiple precise semantics to express an even more precise semantic. From IndieWeb dev chat 2025-05-25.
+            // rel="directory repository" to link to the folder of the file for a page, in a repository, re-using pre-existing rel-directory semantics. From IndieWeb dev chat 2025-05-25.
+            // rel="repository root" (order doesn't matter), or rel="repository home" to link to the repository root (or home) for the file for the current page. From IndieWeb dev chat 2025-05-25.
+
             if (items.lookForViewSource && !editLink) {
-                var keywords = ["view source"];
-                sourceLink = scanPageAnchorsForText(keywords);
+                var codeLinks = document.querySelectorAll('link[rel~="code"], a[rel~="code"]');
+                var directoryLinks = document.querySelectorAll('link[rel~="directory"], a[rel~="directory"]');
+                var repositoryLinks = document.querySelectorAll('link[rel~="repository"], a[rel~="repository"]');
+
+                var sourceLink = null;
+
+                if (codeLinks.length > 0) {
+                    sourceLink = codeLinks[0];
+                } else if (directoryLinks.length > 0) {
+                    sourceLink = directoryLinks[0];
+                } else if (repositoryLinks.length > 0) {
+                    // we need to find the first repository link that has both "repository" and "home" or "root" in its rel attribute.
+                    var matchingRepositoryLinksWithHomeOrRoot = null;
+                    for (var i = 0; i < repositoryLinks.length; i++) {
+                        if (repositoryLinks[i].rel.includes("repository") && (repositoryLinks[i].rel.includes("home") || repositoryLinks[i].rel.includes("root"))) {
+                            matchingRepositoryLinksWithHomeOrRoot = repositoryLinks[i];
+                            break;
+                        }
+                    }
+                    sourceLink = matchingRepositoryLinksWithHomeOrRoot || repositoryLinks[0];
+                }
+
+                if (!sourceLink) {
+                    var keywords = ["view source"];
+                    sourceLink = scanPageAnchorsForText(keywords);
+                }
 
                 if (sourceLink) {
                     chrome.runtime.sendMessage({ sourceLink: sourceLink.href });
