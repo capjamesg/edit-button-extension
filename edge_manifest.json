@@ -1,14 +1,13 @@
 {
     "name": "Edit Button",
     "description": "Show a button if the page you are viewing is editable.",
-    "version": "1.0.4",
+    "version": "1.0.6",
     "manifest_version": 3,
     "action": {
         "default_icon": "/assets/pen.png",
-        "default_popup": "cross_origin_dialog.html",
         "default_title": "Edit this page"
     },
-    "permissions": ["tabs", "activeTab", "scripting", "storage", "webNavigation", "history"],
+    "permissions": ["tabs", "activeTab", "storage", "webNavigation"],
     "options_ui": {
         "page": "options.html",
         "open_in_tab": true
@@ -19,6 +18,12 @@
     },
     "host_permissions": ["<all_urls>"],
     "options_page": "options.html",
+    "web_accessible_resources": [
+      {
+        "resources": ["cross_origin_dialog.html", "cross_origin_dialog.js"],
+        "matches": ["<all_urls>"]
+      }
+    ],
     "content_scripts": [
       {
         "matches": ["<all_urls>"],

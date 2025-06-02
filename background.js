@@ -275,7 +275,6 @@ chrome.commands.onCommand.addListener((command) => {
 });
 
 // if user navigates to new page, reset the edit link
-// onHistoryStateUpdated
 
 var browser = chrome || browser;
 
