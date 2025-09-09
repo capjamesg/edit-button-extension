@@ -26,8 +26,12 @@ function main () {
                 editLink = scanPageAnchorsForText(KEYWORDS);
             }
 
+            console.log("Discovered edit link:", editLink ? editLink.href : null);
+
             if (editLink) {
                 chrome.runtime.sendMessage({ editLink: editLink.href });
+            } else {
+                chrome.runtime.sendMessage({ editLink: null });
             }
 
             // rel="code repository" to link to the code file for a page in a repository. Good: combine multiple precise semantics to express an even more precise semantic. From IndieWeb dev chat 2025-05-25.
@@ -64,6 +68,8 @@ function main () {
 
                 if (sourceLink) {
                     chrome.runtime.sendMessage({ sourceLink: sourceLink.href });
+                } else {
+                    chrome.runtime.sendMessage({ sourceLink: null });
                 }
             }
 

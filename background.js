@@ -161,8 +161,14 @@ if (action && action.onClicked) {
     });
 }
 
+// if user presses back button
+chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
+    console.log("onHistoryStateUpdated event:", details);
+});
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     var tabId = null;
+    console.log("Message received in background script:", request, "from sender:", sender);
 
     if (sender && sender.tab) {
         tabId = sender.tab.id;
@@ -190,7 +196,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
     } else if (request.metadata && sender.tab) {
         tabIdToPageIsLikely404[tabId] = request.pageIsLikely404;
-    } 
+    }
+
+    if (request.editLink === null && sender.tab) {
+        console.log("No edit link found for tab:", tabId, "with URL:", sender.tab.url);
+        delete tabIdToEditLink[tabId];
+        // hide icon
+        chrome.pageAction?.hide(tabId);
+    }
 
     var requestType = tabIdToEditLink[tabId] ? "edit" : "source";
     var linkToOpen = tabIdToEditLink[tabId] || tabIdToSourceLink[tabId];
@@ -283,4 +296,24 @@ browser.storage.onChanged.addListener((changes, areaName) => {
   crossOriginStateGlobal = changes.crossOriginState ? JSON.parse(changes.crossOriginState.newValue) : {};
   console.log("Cross-origin state updated:", crossOriginStateGlobal);
   overrides = changes.overrides ? changes.overrides.newValue : {};
+});
+
+// listen for back button / forward button click
+chrome.webNavigation.onCommitted.addListener((details) => {
+    if (details.frameId === 0) {
+        console.log("Web navigation committed:", details);
+        delete tabIdToEditLink[details.tabId];
+        delete tabIdToPageIsLikely404[details.tabId];
+        delete tabIdToSourceLink[details.tabId];
+        if (chrome.pageAction) {
+            chrome.pageAction.hide(details.tabId);
+        } else {
+            chrome.action.setIcon({path: {16:"assets/pen_with_strike_through.png"}, tabId: details.tabId});
+        }
+        // trigger app.js script again
+        chrome.scripting.executeScript({
+            target: { tabId: details.tabId },
+            files: ['app.js']
+        });
+    }
 });

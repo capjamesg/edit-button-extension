@@ -1,13 +1,13 @@
 {
     "name": "Edit Button",
     "description": "Show a button if the page you are viewing is editable.",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "manifest_version": 3,
     "action": {
         "default_icon": "/assets/pen.png",
         "default_title": "Edit this page"
     },
-    "permissions": ["tabs", "activeTab", "storage", "webNavigation"],
+    "permissions": ["tabs", "activeTab", "storage", "webNavigation", "scripting"],
     "options_ui": {
         "page": "options.html",
         "open_in_tab": true

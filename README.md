@@ -28,6 +28,7 @@ https://github.com/user-attachments/assets/8b21ece3-5925-4ef5-a49b-e4d419bdecb4
 ## Supported Sites
 
 The following sites have been tested and work well with the Edit Button Browser Extension, in alphabetical order by primary domain:
+
 * https://wiki.csswg.org/
 * https://indieweb.org/
 * https://microformats.org/wiki/
@@ -58,7 +59,7 @@ Approved and denied origins can be viewed by the user from the extension prefere
     - Edge
     - Firefox for Android
 - [ ] The `manifest.json` and `edge_manifest.json` version numbers have been updated.
-- [ ] Run `build.zip`.
+- [ ] Run `build.sh`.
 - [ ] Release extension via each distribution channel.
 
 ## Contributing
